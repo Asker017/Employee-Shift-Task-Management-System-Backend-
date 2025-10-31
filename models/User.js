@@ -1,0 +1,48 @@
+const mongoose = require("mongoose")
+const bcrypt = require("bcryptjs")
+
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true, 
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  role: {
+    type: Number,
+    enum: [1, 2],
+    default: 1
+  },
+  department: {
+    type: Number,
+    enum: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    default: 1
+  },
+  designation: {
+    type: Number,
+    enum: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+    default: 1
+  }
+},
+  { timestamps: true }
+)
+
+userSchema.pre("save", async function (next) {
+  if(!this.isModified("password")) return next();
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
+})
+
+userSchema.methods.matchPassword = function (enteredPassword) {
+  return bcrypt.compare(enteredPassword, this.password)
+}
+
+module.exports = mongoose.model("User", userSchema)
