@@ -5,6 +5,8 @@ const shiftAssignmentSchema = require("../models/ShiftAssignment")
 const { departments, designations, shifts } = require("../Data/dropdownDatas");
 const ShiftAssignment = require("../models/ShiftAssignment");
 const Task = require("../models/Task")
+const sendEmail = require("../utils/sendEmail")
+const generateWelcomeEmail = require("../utils/generateWelcomeEmail")
 
 const router = express.Router()
 
@@ -21,6 +23,13 @@ router.post("/add-employee", authMiddleware, async(req, res) => {
     if (exists) return res.status(400).json({ message: "Email already registered" })
 
     const user = await User.create({ name, email, password, role, department, designation });
+
+    await sendEmail(
+      email,
+      "Welcome to ESMS",
+      generateWelcomeEmail(name)
+    )
+
     return res.status(201).json({
       _id: user._id,
       name: user.name,
